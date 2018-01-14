@@ -237,3 +237,84 @@ meeting/enter --> 显示会议过程
 ## Activity Diagram
 
 ![泳道图](ActivityDiagram.png)
+
+
+## meeting 数据结构
+meeting/motion 是不是可以不指定会议，由各会议召集人自行选用。如果不指定，可以合并到motion/new，后续过程是不是一致的？
+
+
+### meeting
+
+* meetingID: hash of the next params before status, part of the enterance url.
+* convenorID
+* chairID
+* clerkID
+* memberID:
+* attendID:
+* open: yes | no
+* encryption: yes | no
+* beigintime:
+* endtime:
+* status: {s0,...,s10}
+	* status param:
+		* s4: motionID
+		* s5-1:
+			* memberID
+			* time
+		* s5-2:
+			* time
+		* s6: motionID
+		* s7: 
+			* motionID
+			* updateID
+		* s8:
+			* motionID
+			* updateID
+
+### data structure
+
+\event\
+event.info.yaml
+	lastest = hash
+	cur = hash
+
+filename = hash.yaml
+	event type
+	event param
+	last hash
+
+## 三页面
+界面改为三个页面，分别对应会议之外、会议内动议间、动议之内。对于在线议事而言，异步模式和实时模式应该是并列的。尤其是不熟练的与会者，需要协助才能完成会前准备。论坛式的预热中，主持人和记录员如何分工协作，需要进一步设计。
+
+
+### main
+* everyone: motion/new
+* everyone: meeting/call
+ 
+list the meeting is called:
+
+* member | attender | chair | clerk : meeting/enter
+
+list the meeting is closed:
+
+* member | attender | chair | clerk : record , summary
+* everyone: record , summary (if the meeting is open)
+
+### meeting
+list the motions and their updates of this meeting:
+
+* member: motion/apply , motion/update
+* chair: motion/accept , motion/begin
+* clerk: motion/retell
+* member(update): motion/confirm
+
+if the meeting is closed, list the motions and summary (vote result):
+* member | attender | chair | clerk : record 
+* everyone: record (if the meeting is open)
+
+### motion
+* everyone: motion/speak  (out of meeting)
+* member: motion/speak (before meeting/begin or motion/free or the member in motion/member) , motion/update , motion/vote 
+* chair: motion/vote , motion/postpone , motion/free , motion/member
+*
+

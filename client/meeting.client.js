@@ -6,9 +6,52 @@ var yaml = require('js-yaml');
 var openpgp = require('openpgp');
 var Hashes = require('jshashes');
 
-
+var eventqueue = new Object();
+var eventmap = new Object();
+var eventinfo ;
+var meeting = new Object();
 var FSM = new Object();
 FSM.status = 0 ;
+
+//eventinit();
+
+function eventinit(){
+    fs.rmdirSync("event");
+    fs.mkdirSync("event");
+    
+    eventinfo = new Object();
+    eventinfo.lastest = "non";
+    fs.writeFileSync("event/event.info.yaml",yaml.safeDump(eventinfo));
+}
+
+function loadeventqueue(){
+    eventmap = new Object();
+    var files = fs.readdirSync("event/");
+    var cnt = 0 ;
+    files.forEach(function(item) {
+        itemsplit = item.split(".");
+        console.log(itemsplit);
+        eventmap[itemsplit[2]] = yaml.safeLoad(fs.readFileSync("event/"+item,'utf8'));
+        cnt += 1;
+    });
+    
+    curhash = eventmap["info"].lastest;
+    eventqueue = new Object();
+    var cur = cnt ;
+    console.log(Object.getOwnPropertyNames(eventmap).length)
+    
+    while(curhash !="non"){
+        eventqueue[cur] = eventmap[curhash];
+        curhash = eventmap[curhash].last;
+        cur -= 1;
+    }
+}
+
+function loadmeeting(){
+    
+}
+
+//getmeeting()
 
 
 var server = http.createServer(function (req, res) {
@@ -21,13 +64,13 @@ var server = http.createServer(function (req, res) {
             console.log("GET");
             var pathname = url.parse(req.url).pathname;
             //console.log(pathname);
-			var realPath = pathname.substring(1);
+            var realPath = pathname.substring(1);
             // get the suffix to detect the MIME type
             var suffix =/\.[^\.]+/.exec(realPath);
             if(realPath == ""){
                 realPath = "s0.html";
             }
-			console.log(realPath);
+            console.log(realPath);
             console.log(suffix);
             fs.exists(realPath, function (exists) {
                 if (!exists) {
@@ -59,6 +102,9 @@ var server = http.createServer(function (req, res) {
 
 });
 // motion/new
-
 // meeting/call
+
+
+
+
 server.listen(80);

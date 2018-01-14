@@ -3,7 +3,13 @@
 	<head>
 		<title>s0</title>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-
+        <script>
+        window.onload = function(){
+            document.getElementById('motion_new').disabled=false;
+            document.getElementById('meeting_call').disabled=false;
+        }
+            
+        </script>
 	</head>
 	<body>
 	<!--content begin-->
@@ -12,6 +18,28 @@
 			<h2>meeting ID</h2>
 			<hr>
 		</div>
+        <div id="meetinglist">
+            <!-- list the calling meetings, click and meeting/enter. -->
+        </div>
+        <div >
+            <button type="button" disabled="disabled" id="motion_new">motion/new</button>
+            <button type="button" disabled="disabled" id="motion_update">motion/update</button>
+            <button type="button" disabled="disabled" id="motion_accept">motion/accept</button>
+            <button type="button" disabled="disabled" id="motion_retell">motion/retell</button>
+            <button type="button" disabled="disabled" id="motion_confirm">motion/confirm</button>
+            <button type="button" disabled="disabled" id="motion_begin">motion/begin</button>
+            <button type="button" disabled="disabled" id="motion_apply">motion/apply</button>
+            <button type="button" disabled="disabled" id="motion_member">motion/member</button>
+            <button type="button" disabled="disabled" id="motion_free">motion/free</button>
+            <button type="button" disabled="disabled" id="motion_speak">motion/speak</button>
+            <button type="button" disabled="disabled" id="motion_postpone">motion/postpone</button>
+            <button type="button" disabled="disabled" id="motion_vote">motion/vote</button>
+            <button type="button" disabled="disabled" id="member_vote">member/vote</button>
+            <button type="button" disabled="disabled" id="meeting_call">meeting/call</button>
+            <button type="button" disabled="disabled" id="meeting_begin">meeting/begin</button>
+            <button type="button" disabled="disabled" id="meeting_begin_confirm">meeting/begin/confirm</button>
+            <button type="button" disabled="disabled" id="meeting_end">meeting/end</button>
+        </div>
 		<p id="httpres">httpres
 		</p>
 	<!--content end-->
