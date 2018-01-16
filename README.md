@@ -122,199 +122,118 @@ meeting/enter --> 显示会议过程
 * 提供动议（决议？）对接执行规章的api？
 * 一个共同的event queue，每人一个local的event queue，取两边当前事件的较早一个送入状态机。
 
-## FSM
+## 16:30~17:59
+meeting
 
-### s0
-初始状态
+继续。
+## 整理三页面设计
+port:6338
 
-* everyone: meeting/motion
-	* s0
-* everyone: meeting/call
-	* s1
-
-### s1
-召集中
-
-* everyone: meeting/enter
-* 主持人: meeting/begin
-	* s2
-
-### s2
-启动检查
-
-* 记录员: meeting/begin/confirm
-	* s3
-* 记录员: meeting/begin/fail
-	* s1
-
-### s3
-会议中、动议间（meeting ID）
-
-* 主持人: motion/begin
-	* s4
-* 主持人: meeting/end
-	* 保密会议: s9
-	* 公开会议: s10
-* 与会者: motion/new
-* 主持人: motion/accept
-	* s7
-
-### s4
-动议中、发言间（motion ID）
-
-* 与会者: motion/apply
-* 主持人: motion/member
-	* s5-1
-* 主持人: motion/free
-	* s5-2
-
-* 主持人: motion/vote
-	* s6
-* 主持人: motion/postpone
-	* s3
-
-### s5-1
-发言中（member ID）
-
-* enter: timeout = motion/member.time
-* 与会者（member ID）: motion/speak
-	*  s4
-* 与会者: motion/update
-	* s4
-* timer: timeout
-	* s4
-* 主持人: motion/free
-	* s5-2
-
-### s5-2
-自由发言中
-
-* 与会者（timeout）: motion/speak
-	* timeout = motion/member.time
-* 与会者: motion/update
-	* s4
-* 主持人: motion/vote
-	* s6
-* 主持人: motion/postpone
-	* s3
-* 主持人: motion/member
-	* s5-1
-
-### s6
-表决中（motion ID）
-
-* enter: timeout = motion/vote.time
-* 与会者: member/vote
-	* 最后一名与会者提交: s3
-* timer: timeout
-	* s3
-
-### s7
-动议复述中（motion ID [update ID])
-
-* 记录员: motion/retell
-	* s8
-
-### s8
-动议确认中（motion ID [update ID])
-
-* 与会者（动议者）: motion/confirm
-	* s3
-
-### s9
-会议纪要
-
-* enter: timeout = 180s
-
-* 记录员: meeting/summary
-	* s10
-* timer: timeout
-	* s10
-
-### s10
-结束状态
-
-## Activity Diagram
-
-![泳道图](ActivityDiagram.png)
-
-
-## meeting 数据结构
-meeting/motion 是不是可以不指定会议，由各会议召集人自行选用。如果不指定，可以合并到motion/new，后续过程是不是一致的？
-
-
-### meeting
-
-* meetingID: hash of the next params before status, part of the enterance url.
-* convenorID
-* chairID
-* clerkID
-* memberID:
-* attendID:
-* open: yes | no
-* encryption: yes | no
-* beigintime:
-* endtime:
-* status: {s0,...,s10}
-	* status param:
-		* s4: motionID
-		* s5-1:
-			* memberID
-			* time
-		* s5-2:
-			* time
-		* s6: motionID
-		* s7: 
-			* motionID
-			* updateID
-		* s8:
-			* motionID
-			* updateID
-
-### data structure
-
-\event\
-event.info.yaml
-	lastest = hash
-	cur = hash
-
-filename = hash.yaml
-	event type
-	event param
-	last hash
-
-## 三页面
-界面改为三个页面，分别对应会议之外、会议内动议间、动议之内。对于在线议事而言，异步模式和实时模式应该是并列的。尤其是不熟练的与会者，需要协助才能完成会前准备。论坛式的预热中，主持人和记录员如何分工协作，需要进一步设计。
-
+分成三个FSM，各自可以独立操作。main页面一个，meeting、motion页面可以多个。
 
 ### main
-* everyone: motion/new
-* everyone: meeting/call
- 
-list the meeting is called:
+* meeting list
+* motion list
+* event list: 参与的会议有新的事件，在主页列出，点击分别进入对应页面。
 
-* member | attender | chair | clerk : meeting/enter
+#### event
+* user/create:
+* motion/create:
+* meeting/create:
+* meeting/enter:
 
-list the meeting is closed:
+#### FSM
 
-* member | attender | chair | clerk : record , summary
-* everyone: record , summary (if the meeting is open)
+* init
+	* user login: find the key file and input passphrase -> login
+	* create a new user -> login
+* login
+	* motion/create
+	* meeting/create
+	* meeting/enter  
+
 
 ### meeting
-list the motions and their updates of this meeting:
+* motion list
+	* ID
+	* content
+	* staus
+	* vote result
+	* action: 
+		* chair: init
+		* member: update
+		* everyone: enter
+* record
+	* raw event
+	* record
+	* summary
 
-* member: motion/apply , motion/update
-* chair: motion/accept , motion/begin
-* clerk: motion/retell
-* member(update): motion/confirm
+#### event:
+* motion/create:
+* motion/update:
+* motion/init:
 
-if the meeting is closed, list the motions and summary (vote result):
-* member | attender | chair | clerk : record 
-* everyone: record (if the meeting is open)
+#### FSM
+* init
+	* motion/update -> init
+	* motion/init -> active
+		* motion: init
+* active
+	* motion/postpone,motion/end ->
+		* all motions closed ->
+			* open meeting: end
+			* csecure meeting: summary
+		* else: active
+* summary: meetig/summary -> end
+* end
 
 ### motion
-* everyone: motion/speak  (out of meeting)
-* member: motion/speak (before meeting/begin or motion/free or the member in motion/member) , motion/update , motion/vote 
-* chair: motion/vote , motion/postpone , motion/free , motion/member
-*
+* motion info
+	* ID
+	* content
+* discuss
+* action: see FSM
 
+#### event
+* motion/retell:
+* motion/confirm:
+* motion/init:
+* motion/postpone:
+* motion/apply:
+* motion/member:
+* motion/free:
+* motion/speak:
+* motion/update:
+* motion/vote:
+* member/vote:
+* motion/timeout: clerk
+
+#### FSM
+* init
+	* clerk: motion/retell -> WFC: wating for confirm
+	* chair: motion/postpone -> postpone
+* WFC
+	* motioner: motion/confirm
+		* yes: -> WFS: waiting for speak
+		* no:-> init
+	* chair: motion/postpone -> postpone
+* WFS:
+	* member: motion/apply -> WFS
+	* chair: motion/member -> member
+ 	* chair: motion/free -> free
+	* chair: motion/vote ->vote
+	* chair: motion/postpone -> postpone
+* member:
+	* speaker: motion/speak -> WFS
+	* clerk: motion/timeout -> WFS
+* free:
+	* member:motion/speak ->free
+	* chair: motion/member -> member
+	* chair: motion/vote -> vote
+	* chair: motion/postpone -> postpone
+* vote
+	* member: member/vote -> vote
+	* clerk: motion/timeout-> end
+* postpone
+	* chair: motion/init -> init
+* end
