@@ -131,8 +131,12 @@ port:6338
 
 分成三个FSM，各自可以独立操作。main页面一个，meeting、motion页面可以多个。
 
+### login
+* user login: find the key file and input passphrase -> main
+* create a new user -> main
+
 ### main
-* meeting list
+* meeting list: enter
 * motion list
 * event list: 参与的会议有新的事件，在主页列出，点击分别进入对应页面。
 
@@ -141,17 +145,6 @@ port:6338
 * motion/create:
 * meeting/create:
 * meeting/enter:
-
-#### FSM
-
-* init
-	* user login: find the key file and input passphrase -> login
-	* create a new user -> login
-* login
-	* motion/create
-	* meeting/create
-	* meeting/enter  
-
 
 ### meeting
 * motion list
