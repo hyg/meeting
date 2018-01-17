@@ -6,6 +6,8 @@ var yaml = require('js-yaml');
 var openpgp = require('openpgp');
 var Hashes = require('jshashes');
 
+var seckeyArmored ;
+var seckey ;
 var eventqueue = new Object();
 var eventmap = new Object();
 var eventinfo ;
@@ -52,7 +54,9 @@ function loadmeeting(){
 }
 
 //getmeeting()
-
+function getClientAddress(req) {
+    return (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress;
+};
 
 var server = http.createServer(function (req, res) {
     var chunk = ""; 
@@ -60,7 +64,47 @@ var server = http.createServer(function (req, res) {
       chunk += data ;
     });
     req.on('end', function(){
-        if(req.method == 'GET') {
+        console.log(req.connection.remoteAddress);
+        if(req.method == 'POST') {
+            console.log("POST");
+            var pathname = url.parse(req.url).pathname;
+            console.log(pathname);
+            console.log('BODY: ' + chunk);
+            console.log('BODY length: ' + chunk.length);
+            switch(pathname){
+                case "/keyArmored":
+                    seckeyArmored = chunk;
+                    seckey = openpgp.key.readArmored(seckeyArmored).keys[0];
+                    //console.log(seckey);
+                    //console.log(seckey.primaryKey);
+                    //console.log(seckey.primaryKey.encrypted);
+                    if(seckey == undefined || seckey.primaryKey.encrypted == undefined){
+                        res.writeHead(406, {'Content-Type': 'text/plain'});
+                        res.write( "it's not a secret key.");
+                        res.end();
+
+                    }else{
+                        res.writeHead(200, {'Content-Type': 'text/plain'});
+                        res.write( seckey.primaryKey.fingerprint + "received.");
+                        res.end();
+                    }
+                    break;
+                case "/passphrase":
+                    //console.log(seckey);
+                    if(seckey.primaryKey.encrypted != undefined && seckey.decrypt(chunk)){
+                        console.log("decrypted！");
+                        res.writeHead(200, {'Content-Type': 'text/plain'});
+                        res.write( seckey.primaryKey.fingerprint + "decrypted.");
+                        res.end();
+                    }else{
+                        res.writeHead(406, {'Content-Type': 'text/plain'});
+                        res.write( seckey.primaryKey.fingerprint + ": wrong passphrase.");
+                        res.end();
+                    }
+                    break;
+                default:
+            }
+        }else if(req.method == 'GET') {
             console.log("GET");
             var pathname = url.parse(req.url).pathname;
             //console.log(pathname);
@@ -68,7 +112,7 @@ var server = http.createServer(function (req, res) {
             // get the suffix to detect the MIME type
             var suffix =/\.[^\.]+/.exec(realPath);
             if(realPath == ""){
-                realPath = "s0.html";
+                realPath = "login.html";
             }
             console.log(realPath);
             console.log(suffix);
@@ -104,7 +148,4 @@ var server = http.createServer(function (req, res) {
 // motion/new
 // meeting/call
 
-
-
-
-server.listen(80);
+server.listen(80,"127.0.0.1");

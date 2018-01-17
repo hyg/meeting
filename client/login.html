@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<title>login</title>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <script src="FileSaver.min.js"></script>
+        <!-- or https://raw.githubusercontent.com/eligrey/FileSaver.js/master/FileSaver.min.js -->
+        <script src="openpgp.min.js"></script>
+        <script>
+    function createkeypair(){
+		var openpgp = window.openpgp;
+		var passphrase = prompt('准备创建密钥，请输入密钥口令');
+		var name = prompt('请输入姓名');
+		var id = prompt('请输入ID');
+		var email = prompt('请输入Email');
+		var userIDs = name + " (" + id + ") <" + email + ">" ;
+		var publicKey,privateKey;
+		var opt = {numBits: 4096, userIds: userIDs, passphrase: passphrase};
+		openpgp.generateKey(opt).then(function(key) {
+			alert(key.key.primaryKey.fingerprint+ "已创建成功。");
+			var pub = new Blob([key.publicKeyArmored], {type: "text/plain;charset=utf-8"});
+			alert("Save the Publc Key");
+			saveAs(pub, key.key.primaryKey.fingerprint+".key.pub");
+			var sec = new Blob([key.privateKeyArmored], {type: "text/plain;charset=utf-8"});
+			alert("Save the Private Key");
+			saveAs(sec, key.key.primaryKey.fingerprint+".key.sec");
+			
+			
+		});
+	}
+
+    // should post the keyfile(armored) and passphrase to the js,
+    // so the js can hold the key when pages open and close.
+	function ReadSecKey(files) {
+		if (files.length) {
+			var file = files[0];
+			var reader = new FileReader();
+			reader.onload = function() {
+                if(POSTkey(this.result) == false){
+                    alert("这不是密钥文件。");
+                    return;
+                }
+                
+				var openpgp = window.openpgp;
+                var privateKey,passphrase;
+                do{
+                    privateKey = openpgp.key.readArmored(this.result).keys[0];
+                    passphrase = prompt("请输入密钥口令");
+                }while(POSTpassphrase(passphrase) == false);
+                window.location.href="main.html?key="+privateKey.primaryKey.fingerprint;
+			}
+			reader.readAsText(file);
+		}
+	}
+    
+        function POSTkey(keyArmored){
+            var xmlhttp;
+            if (window.XMLHttpRequest)
+            {// code for IE7+, Firefox, Chrome, Opera, Safari
+                xmlhttp=new XMLHttpRequest();
+            }
+            else
+            {// code for IE6, IE5
+                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.open("POST","keyArmored",false);
+            xmlhttp.send(keyArmored);
+            if(xmlhttp.status == 200){
+                return true;
+            }else {
+                return false;
+            }
+        }
+        
+        function POSTpassphrase(passphrase){
+            var xmlhttp;
+            if (window.XMLHttpRequest)
+            {// code for IE7+, Firefox, Chrome, Opera, Safari
+                xmlhttp=new XMLHttpRequest();
+            }
+            else
+            {// code for IE6, IE5
+                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.open("POST","passphrase",false);
+            xmlhttp.send(passphrase);
+            if(xmlhttp.status == 200){
+                return true;
+            }else {
+                return false;
+            }
+            //alert(xmlhttp.responseText);
+            //alert(xmlhttp.responseXML);
+        }
+        </script>
+	</head>
+	<body>
+	<!--content begin-->
+		<div class="header" align="center">
+			<h1>login</h1>
+			<hr>
+		</div>
+        <div >
+            <input type="button" id="createkey" value="创建用户" onclick="createkeypair()"></input>
+            <br/>
+            <label>老用户：读取私钥文件</label><br/>
+            <input type="file" id="secfile" value="读取私钥文件" onchange="ReadSecKey(this.files)"/>
+        </div>
+	<!--content end-->
+	</body>
+</html>
