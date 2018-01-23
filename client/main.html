@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<title>s0</title>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <script src="openpgp.min.js"></script>
+        <script src="js-yaml.min.js"></script>
+        
+        <script>
+            window.onload = function(){
+                document.getElementById('motion_new').disabled=false;
+                document.getElementById('meeting_call').disabled=false;
+                
+                createmeetinglist();
+            }
+            
+            function createmeetinglist(){
+                var retstr = GETdata("meeting/list");
+                if(retstr == false){
+                    alert("can not get the meeting list.");
+                    return ;
+                }
+                //alert(retstr) ;
+                var meeting = jsyaml.safeLoad(retstr);
+                //alert(meeting) ;
+                var t = document.createElement('table');
+                var b = document.createElement('tbody');
+                for (var id in meeting) {
+                    var r = document.createElement('tr');
+                    //alert(meeting[id]);
+                    for (var p in meeting[id]) {
+                        //alert(p);
+                        var c = document.createElement('td');
+                        var m = document.createTextNode(meeting[id][p]);
+                        c.appendChild(m);
+                        r.appendChild(c);
+                    }
+                    b.appendChild(r);
+                }
+                t.appendChild(b);
+                document.getElementById('meetinglist').appendChild(t);
+                t.setAttribute('border', '1');
+            }
+            
+            function GETdata(url){ 
+                var xmlhttp;
+                if (window.XMLHttpRequest)
+                {// code for IE7+, Firefox, Chrome, Opera, Safari
+                    xmlhttp=new XMLHttpRequest();
+                }
+                else
+                {// code for IE6, IE5
+                    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+                }
+                xmlhttp.open("GET",url,false);
+                xmlhttp.send();
+                if(xmlhttp.status == 200){
+                    //alert(xmlhttp.responseText);
+                    return xmlhttp.responseText;
+                }else {
+                    return false;
+                }
+            }
+        </script>
+	</head>
+	<body>
+	<!--content begin-->
+		<div class="header" align="center">
+			<h1>meeting</h1>
+			<h2>meeting ID</h2>
+			<hr>
+		</div>
+        <div id="meetinglist">
+            <!-- list the calling meetings, click and meeting/enter. -->
+        </div>
+        <div id="motionlist">
+            <!-- list the open motions, click and see its detail. -->
+        </div>
+        <div >
+            <button type="button" disabled="disabled" id="motion_new">motion/new</button>
+            <button type="button" disabled="disabled" id="motion_update">motion/update</button>
+            <button type="button" disabled="disabled" id="motion_accept">motion/accept</button>
+            <button type="button" disabled="disabled" id="motion_retell">motion/retell</button>
+            <button type="button" disabled="disabled" id="motion_confirm">motion/confirm</button>
+            <button type="button" disabled="disabled" id="motion_begin">motion/begin</button>
+            <button type="button" disabled="disabled" id="motion_apply">motion/apply</button>
+            <button type="button" disabled="disabled" id="motion_member">motion/member</button>
+            <button type="button" disabled="disabled" id="motion_free">motion/free</button>
+            <button type="button" disabled="disabled" id="motion_speak">motion/speak</button>
+            <button type="button" disabled="disabled" id="motion_postpone">motion/postpone</button>
+            <button type="button" disabled="disabled" id="motion_vote">motion/vote</button>
+            <button type="button" disabled="disabled" id="member_vote">member/vote</button>
+            <button type="button" disabled="disabled" id="meeting_call">meeting/call</button>
+            <button type="button" disabled="disabled" id="meeting_begin">meeting/begin</button>
+            <button type="button" disabled="disabled" id="meeting_begin_confirm">meeting/begin/confirm</button>
+            <button type="button" disabled="disabled" id="meeting_end">meeting/end</button>
+        </div>
+		<p id="httpres">httpres
+		</p>
+	<!--content end-->
+	</body>
+</html>

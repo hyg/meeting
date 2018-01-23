@@ -24,8 +24,6 @@
 			var sec = new Blob([key.privateKeyArmored], {type: "text/plain;charset=utf-8"});
 			alert("Save the Private Key");
 			saveAs(sec, key.key.primaryKey.fingerprint+".key.sec");
-			
-			
 		});
 	}
 
@@ -41,7 +39,7 @@
                     return;
                 }
                 
-				var openpgp = window.openpgp;
+                var openpgp = window.openpgp;
                 var privateKey,passphrase;
                 do{
                     privateKey = openpgp.key.readArmored(this.result).keys[0];

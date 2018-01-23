@@ -107,40 +107,62 @@ var server = http.createServer(function (req, res) {
         }else if(req.method == 'GET') {
             console.log("GET");
             var pathname = url.parse(req.url).pathname;
-            //console.log(pathname);
-            var realPath = pathname.substring(1);
-            // get the suffix to detect the MIME type
-            var suffix =/\.[^\.]+/.exec(realPath);
-            if(realPath == ""){
-                realPath = "login.html";
-            }
-            console.log(realPath);
-            console.log(suffix);
-            fs.exists(realPath, function (exists) {
-                if (!exists) {
-                    res.writeHead(404, {'Content-Type': 'text/plain'});
-                    res.write("找不到文件","utf8");
+            console.log(pathname);
+            
+            switch(pathname){
+                case "/meeting/list":
+                    //loadmeeting();
+                    //test
+                    for (var i = 0; i<10 ; i++){
+                        meeting[i] = new Object(); ;
+
+                        meeting[i]["id"] = i ;
+                        meeting[i]["status"] = "calling";
+                    }
+                    
+                    //console.log(yaml.safeDump(meeting));
+                    
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
+                    res.write( yaml.safeDump(meeting));
                     res.end();
-                } else {
-                    fs.readFile(realPath, "binary", function(err, file){    
-                        if ( err ) {    
-                            res.writeHead(500, {'Content-Type': 'text/plain'});    
-                            res.write(err);    
-                            res.end();    
+                    
+                    break;
+                default:
+                    var realPath = pathname.substring(1);
+                    // get the suffix to detect the MIME type
+                    var suffix =/\.[^\.]+/.exec(realPath);
+                    if(realPath == ""){
+                        realPath = "login.html";
+                    }
+                    console.log(realPath);
+                    console.log(suffix);
+                    fs.exists(realPath, function (exists) {
+                        if (!exists) {
+                            res.writeHead(404, {'Content-Type': 'text/plain'});
+                            res.write("找不到文件","utf8");
+                            res.end();
                         } else {
-                            // return the content in right MIME type
-                            if(suffix == ".css"){
-                                res.writeHead(200, {'Content-Type':'text/css'});
-                            }else{
-                                res.writeHead(200, {'Content-Type':'text/html'});    // or text/x-yaml  to make client save a file    
-                            }
-                            
-                            res.write(file, "binary");
-                            res.end();    
+                            fs.readFile(realPath, "binary", function(err, file){    
+                                if ( err ) {    
+                                    res.writeHead(500, {'Content-Type': 'text/plain'});    
+                                    res.write(err);    
+                                    res.end();    
+                                } else {
+                                    // return the content in right MIME type
+                                    if(suffix == ".css"){
+                                        res.writeHead(200, {'Content-Type':'text/css'});
+                                    }else{
+                                        res.writeHead(200, {'Content-Type':'text/html'});    // or text/x-yaml  to make client save a file    
+                                    }
+                                    
+                                    res.write(file, "binary");
+                                    res.end();
+                                    //console.log(file);
+                                }
+                            })
                         }
-                    })
-                }
-        });
+                    });
+            }
         }
     });
 
