@@ -72,7 +72,7 @@ var server = http.createServer(function (req, res) {
             console.log('BODY: ' + chunk);
             console.log('BODY length: ' + chunk.length);
             switch(pathname){
-                case "/keyArmored":
+                case "/user/keyArmored":
                     seckeyArmored = chunk;
                     seckey = openpgp.key.readArmored(seckeyArmored).keys[0];
                     //console.log(seckey);
@@ -89,7 +89,7 @@ var server = http.createServer(function (req, res) {
                         res.end();
                     }
                     break;
-                case "/passphrase":
+                case "/user/passphrase":
                     //console.log(seckey);
                     if(seckey.primaryKey.encrypted != undefined && seckey.decrypt(chunk)){
                         console.log("decrypted！");
@@ -110,7 +110,7 @@ var server = http.createServer(function (req, res) {
             console.log(pathname);
             
             switch(pathname){
-                case "/meeting/list":
+                case "/page/meetinglist":
                     //loadmeeting();
                     //test
                     for (var i = 0; i<10 ; i++){

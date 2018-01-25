@@ -61,7 +61,7 @@
             {// code for IE6, IE5
                 xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
             }
-            xmlhttp.open("POST","keyArmored",false);
+            xmlhttp.open("POST","user/keyArmored",false);
             xmlhttp.send(keyArmored);
             if(xmlhttp.status == 200){
                 return true;
@@ -80,7 +80,7 @@
             {// code for IE6, IE5
                 xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
             }
-            xmlhttp.open("POST","passphrase",false);
+            xmlhttp.open("POST","user/passphrase",false);
             xmlhttp.send(passphrase);
             if(xmlhttp.status == 200){
                 return true;

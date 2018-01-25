@@ -3,6 +3,19 @@
 	<head>
 		<title>s0</title>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <style type="text/css">
+            table{ 
+                margin-left: auto;
+                margin-right: auto;
+            }
+            th {
+                padding: 5px 17px;
+                background-color:#D0D0D0;
+            }
+            td {
+                text-align:center;
+            }
+        </style>
         <script src="openpgp.min.js"></script>
         <script src="js-yaml.min.js"></script>
         
@@ -15,7 +28,7 @@
             }
             
             function createmeetinglist(){
-                var retstr = GETdata("meeting/list");
+                var retstr = GETdata("page/meetinglist");
                 if(retstr == false){
                     alert("can not get the meeting list.");
                     return ;
@@ -24,22 +37,40 @@
                 var meeting = jsyaml.safeLoad(retstr);
                 //alert(meeting) ;
                 var t = document.createElement('table');
+                
+                var ish = false;
+                var h = document.createElement('thead');
+                var hr = document.createElement('tr');
+                
                 var b = document.createElement('tbody');
                 for (var id in meeting) {
                     var r = document.createElement('tr');
                     //alert(meeting[id]);
                     for (var p in meeting[id]) {
+                        if(!ish){
+                            var hc = document.createElement('th');
+                            var hm = document.createTextNode(p);
+                            hc.appendChild(hm);
+                            hr.appendChild(hc);
+                        }
                         //alert(p);
                         var c = document.createElement('td');
                         var m = document.createTextNode(meeting[id][p]);
                         c.appendChild(m);
                         r.appendChild(c);
                     }
+                    if(!ish){
+                        h.appendChild(hr);
+                        t.appendChild(h);
+                        ish = true;
+                    }
+                    
                     b.appendChild(r);
                 }
                 t.appendChild(b);
                 document.getElementById('meetinglist').appendChild(t);
                 t.setAttribute('border', '1');
+                t.setAttribute('style', '');
             }
             
             function GETdata(url){ 
@@ -70,7 +101,7 @@
 			<h2>meeting ID</h2>
 			<hr>
 		</div>
-        <div id="meetinglist">
+        <div id="meetinglist" >
             <!-- list the calling meetings, click and meeting/enter. -->
         </div>
         <div id="motionlist">
